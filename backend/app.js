@@ -12,6 +12,9 @@ connnectDB();
 
 app.use(express.json())
 
+const cors = require('cors')
+app.use(cors())
+
 app.use('/api/v1/signup',signUp)
 app.use('/api/v1/login',logIn)
 
