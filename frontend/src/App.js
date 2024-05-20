@@ -4,6 +4,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import LoginComponent from './components/loginComponent/loginComponent';
 import SignupComponent from './components/signupComponent/signupComponent';
+import AdminLoginComponent from './components/adminComponent/adminLoginComponent';
+
 
 function App() {
   return (
@@ -22,6 +24,9 @@ function App() {
                 <li className='nav-item'>
                   <Link className='nav-link' to={'/signup'}>Sign Up</Link>
                 </li>
+                <li className='nav-item'>
+                  <Link className='nav-link' to={'/login/admin'}>Admin Login</Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -33,6 +38,7 @@ function App() {
               <Route exact path='/' element={<LoginComponent />} />
               <Route path='/login' element={<LoginComponent />} />
               <Route path='/signup' element={<SignupComponent />} />
+              <Route path='/login/admin' element={<AdminLoginComponent />} />
             </Routes>
           </div>
         </div>
