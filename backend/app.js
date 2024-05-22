@@ -5,9 +5,12 @@ const connnectDB = require('./src/DB/db')
 const PORT = process.env.PORT || 8080
 const cookieParser = require("cookie-parser");
 
-const signUp = require('./src/routes/signUpRoute')
-const logIn = require('./src/routes/logInRoute')
-const Adminlogin = require('./src/routes/logInRoute') 
+const auth = require('./src/routes/authRoute')
+const movie = require('./src/routes/movieRoute')
+const theatre = require('./src/routes/theatreRoutes')
+const booking = require('./src/routes/bookingRoute')
+
+
 
 connnectDB();  
 app.use(cookieParser());
@@ -17,9 +20,10 @@ const cors = require('cors');
 
 app.use(cors())
 
-app.use('/api/v1/signup',signUp)
-app.use('/api/v1/login',logIn)
-app.use('/api/v1/login',Adminlogin)
+app.use('/api/v1/auth', auth)
+app.use('/api/v1/movie', movie)
+app.use('/api/v1/theatre', theatre)
+app.use('/api/v1/booking', booking)
 
 
 app.use('/',(req,res)=>{
