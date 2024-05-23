@@ -17,7 +17,6 @@ app.use(cookieParser());
 app.use(express.json())
 
 const cors = require('cors');
-
 app.use(cors())
 
 app.use('/api/v1/auth', auth)

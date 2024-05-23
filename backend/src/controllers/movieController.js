@@ -2,7 +2,7 @@ const Movie = require('../models/movieModel');
 
 exports.addMovie = async (req, res) => {
   const { 
-    name, 
+    title, 
     description, 
     releaseDate, 
     duration, 
@@ -11,7 +11,7 @@ exports.addMovie = async (req, res) => {
 } = req.body;
 
   try {
-    const movie = new Movie({ name, description, releaseDate, duration, genre, theatreId });
+    const movie = new Movie({ title, description, releaseDate, duration, genre, theatreId });
     await movie.save();
     res.json(movie);
   } catch (err) {
@@ -20,9 +20,9 @@ exports.addMovie = async (req, res) => {
 };
 
 exports.getMovies = async (req, res) => {
-  const { name, date, theatreName } = req.query;
+  const { title, date, theatreName } = req.query;
   let query = {};
-  if (name) query.name = new RegExp(name, 'i');
+  if (title) query.title = new RegExp(title, 'i');
   if (date) query.releaseDate = new Date(date);
   if (theatreName) query.theatreName = new RegExp(theatreName, 'i');
   try {

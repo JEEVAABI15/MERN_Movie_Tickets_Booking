@@ -16,14 +16,13 @@ const AdminLoginComponent = () => {
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
-    console.log(email, password);
+    console.log(email, password); 
 
     fetch('http://localhost:8000/api/v1/auth/adminlogin', {
       method: 'POST',
       crossDomain: true,
       headers: {
         'Content-type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         email: email,

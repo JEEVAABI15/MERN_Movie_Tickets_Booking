@@ -57,6 +57,9 @@ fetch('http://localhost:8000/api/v1/auth/login',{
               window.localStorage.setItem('token',data.token)
               window.location.href='/userdata'
             }
+            else {
+              alert('Invalid credentials');
+            }
         })
         .catch((error)=>{
             console.error('Error:',error);
