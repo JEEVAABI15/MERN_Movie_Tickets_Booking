@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 
 const AdminLoginComponent = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const emailHandler = (event) => {
     setEmail(event.target.value);
@@ -14,14 +16,13 @@ const AdminLoginComponent = () => {
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
-    console.log(email, password);
+    console.log(email, password); 
 
-    fetch('http://localhost:8000/api/v1/login/admin', {
+    fetch('http://localhost:8000/api/v1/auth/adminlogin', {
       method: 'POST',
       crossDomain: true,
       headers: {
         'Content-type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         email: email,
@@ -35,7 +36,7 @@ const AdminLoginComponent = () => {
           alert('Admin login successful!');
           console.log(data.token);
           window.localStorage.setItem('token', data.token);
-          // Redirect to admin dashboard or perform other admin actions
+          navigate('/admin/dashboard');
         } else {
           alert('Invalid credentials');
         }

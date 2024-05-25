@@ -32,7 +32,7 @@ formSubmitHandler = (event) =>{
     this.state.email,
     this.state.password
 );
-fetch('http://localhost:8000/api/v1/login',{
+fetch('http://localhost:8000/api/v1/auth/login',{
             method:'POST',
             crossDomain: true,
             headers: {
@@ -56,6 +56,9 @@ fetch('http://localhost:8000/api/v1/login',{
               console.log(data.token)
               window.localStorage.setItem('token',data.token)
               window.location.href='/userdata'
+            }
+            else {
+              alert('Invalid credentials');
             }
         })
         .catch((error)=>{

@@ -38,7 +38,7 @@ class SignupComponent extends Component {
             this.state.password
         );
 
-        fetch('http://localhost:8000/api/v1/signup',{
+        fetch('http://localhost:8000/api/v1/auth/signup',{
             method:'POST',
             //crossDomain: true,
             headers: {

@@ -1,31 +1,40 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/userModel");
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 
-const authMiddleware = async (req, res, next) => {
+const extractToken = (req) => req.header('x-auth-token');
+
+exports.isAuthenticated = (req, res, next) => {
+  const token = extractToken(req);
+  if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
+
   try {
-    const token = req.cookies.token;
-    console.log("Token : ", token);
-    // console.log(token);
-    if (token) {
-      jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-        if (err) {
-          return res.status(401).json({ Error: "Unauthorized User" });
-        }
-        const user = await User.findById(decoded.id);
-        console.log(user);
-        if (!user) {
-          return res.status(401).json({ Error: "User not found" });
-        }
-        req.user = user;
-        next();
-      });
-    } else {
-      return res.status(401).json({ Error: "Token not provided" });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded.user;
+    next();
   } catch (err) {
-    console.error("Internal Server Error in authMiddleware:", err);
-    res.status(500).json({ Error: "Internal Server Error" });
+    console.error('Token verification failed:', err);
+    res.status(401).json({ msg: 'Token is not valid' });
   }
 };
 
-module.exports = authMiddleware;
+exports.isAdmin = async (req, res, next) => {
+  const token = extractToken(req);
+  if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded.user;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    if (user.role === 'admin') {
+      next();
+    } else {
+      res.status(403).json({ msg: 'Access denied, you do not have the required permissions' });
+    }
+  } catch (err) {
+    console.error('Error in isAdmin middleware:', err);
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
+};

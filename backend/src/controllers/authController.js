@@ -1,50 +1,92 @@
-// const User = require("../models/userModel");
-// const bcrypt = require("bcrypt");
-// const jwt = require("jsonwebtoken");
+const userModel = require('../models/userModel');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// const registerController = async (req, res) => {
-//   try {
-//     const { username, email, password, role } = req.body;
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) throw new Error("This email already exists");
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hashSync(password, salt);
-//     const newUser = new User({ ...req.body, password: hashedPassword });
-//     const savedUser = newUser.save();
-//     res.status(200).json(newUser);
-//   } catch (err) {
-//     console.log(err);
-//     res.status(200).json(err);
-//   }
-// };
+const addNewUser = async (request, response) => {
+    try {
+        const { name, email, password } = request.body;
 
-// const loginController = async (req, res) => {
-//   try {
-//     const { username, email, password } = req.body;
-//     const user = await User.findOne({ email });
-//     if (!user) throw new Error("User Not found");
-//     const matchedData = await bcrypt.compareSync(password, user.password);
-//     if (!matchedData) throw new Error("UnAuthorised User");
-//     const { password: _, ...data } = user._doc;
-//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-//       expiresIn: process.env.JWT_EXPIRES_IN,
-//     });
-//     res.cookie("token", token).status(200).json(data);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json(err);
-//   }
-// };
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            return response.status(409).json({ message: 'Email ID already exists...' });
+        }
 
-// const logoutController = async (req, res) => {
-//   try {
-//     res
-//       .clearCookie("token", { sameSite: true, secure: true })
-//       .status(200)
-//       .json({ Message: "Logged Out" });
-//   } catch (err) {
-//     res.status(500).json({ Error: "Internal Server Error" });
-//   }
-// };
+        const encryptedPassword = await bcrypt.hash(password, 10);
 
-// module.exports = { registerController, loginController, logoutController };
+        const user = new userModel({
+            name,
+            email,
+            password: encryptedPassword
+        });
+
+        const newUser = await user.save();
+        
+        const payload = { user: { id: newUser.id } };
+        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
+            if (err) {
+                console.error('Error signing token:', err);
+                return response.status(500).json({ message: 'Error signing token' });
+            }
+            response.status(201).json({ newUser, token });
+        });
+    } catch (error) {
+        console.error('Error occurred while adding new user:', error);
+        response.status(500).json({ message: error.message });
+    }
+};
+
+const loginAdmin = async (request, response) => {
+    const { email, password } = request.body;
+    try {
+        const validUser = await userModel.findOne({ email });
+        if (!validUser) {
+            return response.status(401).json({ message: "Invalid email." });
+        }
+
+        if (validUser.role !== 'admin') {
+            return response.status(403).json({ message: "Access denied. Not an admin." });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, validUser.password);
+        if (!isPasswordValid) {
+            return response.status(401).json({ message: "Invalid Password" });
+        }
+
+        const AUTH_TOKEN = jwt.sign(
+            { email: validUser.email, role: validUser.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        return response.status(200).json({ status: 'OK', token: AUTH_TOKEN });
+    } catch (error) {
+        console.error('Error occurred while logging in admin:', error);
+        return response.status(500).json({ message: error.message });
+    }
+};
+
+const loginUser = async (request, response) => {
+    const { email, password } = request.body;
+    try {
+        const validUser = await userModel.findOne({ email });
+        if (!validUser) {
+            return response.status(401).json({ message: "Invalid email." });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, validUser.password);
+        if (!isPasswordValid) {
+            return response.status(401).json({ message: "Invalid Password" });
+        }
+
+        const AUTH_TOKEN = jwt.sign(
+            { email: validUser.email, role: validUser.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        return response.status(200).json({ status: 'OK', token: AUTH_TOKEN });
+    } catch (error) {
+        console.error('Error occurred while logging in user:', error);
+        return response.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { addNewUser, loginAdmin, loginUser };
